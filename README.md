@@ -1,18 +1,26 @@
-# Focus Laravel Test
+# Focus Laravel PHP 8.1 Compatibility Test
 
-A minimal Laravel application to test PHP hosting. Laravel version is locked by `composer.lock`; dependencies are installed on the server with Composer, not committed as `vendor/`.
+Disposable compatibility probe for this host's PHP 8.1.28 environment. It uses Laravel 10.50.3, which is end-of-life and has known security advisories. **Do not use this app for production or real user data. Remove it after the smoke test.**
 
-## Plesk deployment checklist
+Composer dependency resolution is pinned to PHP 8.1.28 so the lock file won't silently select packages requiring a newer PHP runtime.
 
-1. Configure Git deployment to fetch this public GitHub repository and the `main` branch. If Plesk reports **Access denied**, fix repository access first; that happens before Laravel or PHP is executed.
-2. Deploy the repository into the domain's `httpdocs` directory (or another application directory outside the public web root).
-3. Set the domain's document root to the app's `public` directory (for example, `httpdocs/public`). Do not expose the Laravel project root: `.env`, `vendor`, and application source must stay outside the public document root.
-4. Ensure the domain's PHP version satisfies `composer.json` and enable the required PHP extensions. From the project root, run `composer install --no-dev --prefer-dist --optimize-autoloader`.
-5. Create the private runtime config (`cp .env.example .env`) and set production values, including `APP_ENV=production`, `APP_DEBUG=false`, and a unique `APP_KEY` (`php artisan key:generate --force`). Never commit `.env` or expose it through the web root.
-6. Make `storage/` and `bootstrap/cache/` writable by the PHP runtime. The example config uses file sessions/cache and synchronous queues so a database is not required for this smoke test.
+## Plesk setup
+
+1. Pull the `main` branch from the public GitHub repository. If Plesk reports `Access denied`, fix Git/deployment permissions first; that error occurs before PHP runs.
+2. Deploy the repository to `httpdocs` and change the domain document root to `httpdocs/public`. Do not expose the Laravel project root.
+3. Use the domain's PHP 8.1 handler and install dependencies from the project root with `composer install --no-dev --prefer-dist --optimize-autoloader`.
+4. Create the private environment file (`cp .env.example .env`), set `APP_ENV=production`, `APP_DEBUG=false`, and generate a unique key with `php artisan key:generate --force`. Never commit `.env`.
+5. Ensure `storage/` and `bootstrap/cache/` are writable by PHP.
 
 ## Smoke test
 
-After deployment, open `/healthz`. A working Laravel request returns JSON with `status`, Laravel version, and PHP version. The homepage (`/`) is Laravel's welcome page.
+Open `/healthz`. A working request returns JSON with `status`, Laravel version, and the active PHP version. The homepage (`/`) should show Laravel's welcome page. This confirms PHP/Laravel request execution only; it is not a production-readiness test.
 
-For local development, run `composer install` and `php artisan serve` from the project root.
+## Local
+
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan serve
+```
